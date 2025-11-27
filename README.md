@@ -1,1 +1,1 @@
-# CipherMind
+# VectaSafe
