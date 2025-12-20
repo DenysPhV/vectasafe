@@ -1,7 +1,7 @@
 resource "google_storage_bucket" "vault" {
   name          = "vsafe-vault-${var.project_id}" # Унікальне ім'я
   location      = var.region
-  force_destroy = false # Захист від випадкового видалення даних клієнтів
+  force_destroy = true # Захист від випадкового видалення даних клієнтів
 
   # Увімкнення версійності (Розділ 31 архітектури)
   versioning {
@@ -36,7 +36,7 @@ resource "google_kms_crypto_key" "vsafe_storage_key" {
   key_ring = google_kms_key_ring.vsafe_keyring.id
   
   lifecycle {
-    prevent_destroy = true # Захист від видалення ключів (Disaster Recovery)
+    prevent_destroy = false # Захист від видалення ключів (Disaster Recovery)
   }
 }
 

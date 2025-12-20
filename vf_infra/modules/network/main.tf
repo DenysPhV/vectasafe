@@ -23,3 +23,19 @@ resource "google_compute_firewall" "allow_lb" {
   source_ranges = ["130.211.0.0/22", "35.191.0.0/16"] # Діапазони Google LB
   target_tags   = ["vectasafe-backend"]
 }
+
+resource "google_compute_firewall" "allow_iap_ssh" {
+  name    = "allow-iap-ssh"
+  network = google_compute_network.vpc.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+
+  # Цей діапазон є статичним для сервісу Google IAP
+  source_ranges = ["35.235.240.0/20"]
+  
+  # Застосовуємо тільки до наших бекенд-серверів
+  target_tags   = ["vectasafe-backend"]
+}
