@@ -48,6 +48,13 @@ module "api_servers" {
   max_replicas  = 10
 }
 
+module "database" {
+  source      = "./modules/database"
+  project_id  = var.project_id
+  region      = var.region
+  db_password = var.db_password # Не забудьте додати в vsafe.tfvars
+}
+
 # 1. Отримуємо службовий акаунт GCS для вашого проекту
 data "google_storage_project_service_account" "gcs_account" {
   project = var.project_id
