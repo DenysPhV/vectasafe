@@ -8,6 +8,11 @@ variable "region" {
   type        = string
 }
 
+variable "network_id" {
+  description = "ID мережі VPC для приватного з'єднання"
+  type        = string
+}
+
 variable "db_password" {
   type = string
   sensitive = true

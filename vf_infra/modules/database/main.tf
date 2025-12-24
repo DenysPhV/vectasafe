@@ -8,14 +8,20 @@ resource "google_sql_database_instance" "vectasafe_db" {
     
     # Налаштування безпеки
     ip_configuration {
-      ipv4_enabled = true
-      # В ідеалі: обмежити дозволені IP або використовувати Private Service Connect
+      ipv4_enabled = false
+      private_network = var.network_id
+      ssl_mode = "ENCRYPTED_ONLY"
     }
 
     backup_configuration {
       enabled = true
-      start_time = "03:00" # Нічний бекап для Disaster Recovery
+      start_time = "03:00"
     }
+  }
+
+  # Захист від випадкового видалення через Terraform
+  lifecycle {
+    prevent_destroy = true
   }
 }
 

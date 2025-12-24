@@ -9,6 +9,34 @@ resource "google_compute_subnetwork" "subnet" {
   region        = var.region
   network       = google_compute_network.vpc.id
 }
+# 1. Створюємо роутер
+resource "google_compute_router" "router" {
+  name    = "vsafe-router"
+  network = google_compute_network.vpc.id
+  region  = var.region
+}
+# 2. Створюємо NAT (шлюз в інтернет)
+resource "google_compute_router_nat" "nat" {
+  name                               = "vsafe-nat"
+  router                             = google_compute_router.router.name
+  region                             = var.region
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+}
+# 3. Налаштування для приватної бази даних (Private Service Access)
+resource "google_compute_global_address" "private_ip_address" {
+  name          = "vsafe-private-ip"
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
+  prefix_length = 16
+  network       = google_compute_network.vpc.id
+}
+
+resource "google_service_networking_connection" "private_vpc_connection" {
+  network                 = google_compute_network.vpc.id
+  service                 = "servicenetworking.googleapis.com"
+  reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
+}
 
 # Firewall: дозволяємо трафік від Load Balancer до наших VM
 resource "google_compute_firewall" "allow_lb" {

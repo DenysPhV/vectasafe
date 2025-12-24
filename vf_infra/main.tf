@@ -24,20 +24,6 @@ resource "google_kms_crypto_key_iam_binding" "gcs_kms_binding" {
   ]
 }
 
-module "network" {
-  source       = "./modules/network"
-  network_name = "vectasafe-prod"
-  region       = var.region
-  
-}
-
-module "storage" {
-  source     = "./modules/storage"
-  project_id = var.project_id
-  region     = var.region
-  kms_key_link = google_kms_crypto_key.vsafe_storage_key.id
-}
-
 module "api_servers" {
   source        = "./modules/api_servers"
   region        = var.region
@@ -48,11 +34,25 @@ module "api_servers" {
   max_replicas  = 10
 }
 
+module "network" {
+  source       = "./modules/network"
+  network_name = "vectasafe-prod"
+  region       = var.region
+}
+
 module "database" {
   source      = "./modules/database"
   project_id  = var.project_id
   region      = var.region
-  db_password = var.db_password # Не забудьте додати в vsafe.tfvars
+  db_password = var.db_password
+  network_id  = module.network.network_id
+}
+
+module "storage" {
+  source     = "./modules/storage"
+  project_id = var.project_id
+  region     = var.region
+  kms_key_link = google_kms_crypto_key.vsafe_storage_key.id
 }
 
 # 1. Отримуємо службовий акаунт GCS для вашого проекту

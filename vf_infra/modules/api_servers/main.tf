@@ -31,11 +31,22 @@ resource "google_compute_instance_template" "api_tpl" {
     scopes = ["cloud-platform"]
   }
 
-  metadata_startup_script = <<-EOT
-    #!/bin/bash
-    # Код для запуску вашого Python Monolith API або Worker Service
-    echo "Starting VectaSafe Service..."
-  EOT
+  metadata = {
+    startup-script = <<-EOT
+      #! /bin/bash
+      apt-get update
+      apt-get install -y python3-pip git
+      
+      # Клон репозиторію (потрібен токен або публічний доступ)
+      git clone https://github.com/DenysPhV/vectasafe.git /opt/vectasafe
+      
+      cd /opt/vectasafe
+      pip3 install -r requirements.txt
+      
+      # Запуск API (приклад)
+      nohup uvicorn main:app --host 0.0.0.0 --port 8080 &
+    EOT
+  }
 }
 
 # Managed Instance Group (MIG)
