@@ -33,3 +33,4 @@ yarn-error.log*
 *.tfstate.*
 .crash.log
 *.tfvars
+.tfvars
