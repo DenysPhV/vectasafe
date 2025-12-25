@@ -46,6 +46,7 @@ module "database" {
   region      = var.region
   db_password = var.db_password
   network_id  = module.network.network_id
+  static_ip = var.static_ip
 }
 
 module "storage" {
