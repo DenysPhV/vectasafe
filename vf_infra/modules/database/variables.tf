@@ -17,3 +17,7 @@ variable "db_password" {
   type = string
   sensitive = true
 }
+
+variable "static_ip" {
+  type = string
+}

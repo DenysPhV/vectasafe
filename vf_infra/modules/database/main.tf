@@ -11,6 +11,10 @@ resource "google_sql_database_instance" "vectasafe_db" {
       ipv4_enabled = false
       private_network = var.network_id
       ssl_mode = "ENCRYPTED_ONLY"
+      authorized_networks {
+        name  = "office-vpn"
+        value = var.static_ip
+      }
     }
 
     backup_configuration {
