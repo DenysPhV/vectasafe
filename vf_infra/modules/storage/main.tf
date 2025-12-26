@@ -16,7 +16,7 @@ resource "google_storage_bucket" "vault" {
       age = 90
     }
     action {
-      type = "SetStorageClass"
+      type          = "SetStorageClass"
       storage_class = "COLDLINE" # Автоматичний перехід у Cold Storage (Розділ 3)
     }
   }

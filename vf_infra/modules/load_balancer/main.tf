@@ -1,7 +1,7 @@
 # Health Check
 resource "google_compute_health_check" "http_check" {
   name = "${var.lb_name}-health-check"
-  
+
   http_health_check {
     port = 8080
   }

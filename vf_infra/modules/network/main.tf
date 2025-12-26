@@ -63,7 +63,7 @@ resource "google_compute_firewall" "allow_iap_ssh" {
 
   # Цей діапазон є статичним для сервісу Google IAP
   source_ranges = ["35.235.240.0/20"]
-  
+
   # Застосовуємо тільки до наших бекенд-серверів
-  target_tags   = ["vectasafe-backend"]
+  target_tags = ["vectasafe-backend"]
 }

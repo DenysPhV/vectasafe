@@ -4,8 +4,13 @@ variable "machine_type" {
   default     = "e2-medium"
 }
 
-variable "region" {
+variable "project_id" {
+  description = "Назва проекту"
   type        = string
+}
+
+variable "region" {
+  type = string
 }
 
 variable "subnetwork_id" {
@@ -26,5 +31,5 @@ variable "max_replicas" {
 }
 
 variable "vault_bucket_name" {
-  type        = string
+  type = string
 }
