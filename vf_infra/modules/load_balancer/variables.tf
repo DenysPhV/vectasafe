@@ -1,0 +1,25 @@
+variable "project_id" {
+  description = "ID проекту GCP"
+  type        = string
+}
+
+variable "region" {
+  description = "Регіон розгортання"
+  type        = string
+}
+
+variable "backend_instance_group" {
+  description = "Посилання на Instance Group, куди направляти трафік"
+  type        = string
+}
+
+variable "domain_name" {
+  description = "Доменне ім'я для SSL сертифікату (напр. api.vectasafe.com)"
+  type        = string
+}
+
+variable "lb_name" {
+  description = "Базова назва для ресурсів LB"
+  type        = string
+  default     = "vectasafe-lb"
+}

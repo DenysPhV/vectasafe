@@ -4,11 +4,11 @@ resource "google_sql_database_instance" "vectasafe_db" {
   region           = var.region
 
   settings {
-    tier = "db-f1-micro" # Для розробки/MVP достатньо мінімального рівня
+    tier = "db-g1-small"
     
     # Налаштування безпеки
     ip_configuration {
-      ipv4_enabled = false
+      ipv4_enabled = true
       private_network = var.network_id
       ssl_mode = "ENCRYPTED_ONLY"
       authorized_networks {
