@@ -6,7 +6,7 @@ output "vault_bucket_name" {
 
 # Вивід зовнішньої IP-адреси Load Balancer
 output "load_balancer_ip" {
-  value       = google_compute_global_forwarding_rule.default.ip_address
+  value       = module.load_balancer.load_balancer_ip
   description = "IP адреса вашого API Gateway"
 }
 

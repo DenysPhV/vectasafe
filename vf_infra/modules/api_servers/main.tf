@@ -36,15 +36,35 @@ resource "google_compute_instance_template" "api_tpl" {
       #! /bin/bash
       apt-get update
       apt-get install -y python3-pip git
-      
-      # Клон репозиторію (потрібен токен або публічний доступ)
+
+      # Краще використовувати конкретний коміт або тег, а не гілку main
       git clone https://github.com/DenysPhV/vectasafe.git /opt/vectasafe
-      
       cd /opt/vectasafe
       pip3 install -r requirements.txt
-      
-      # Запуск API (приклад)
-      nohup uvicorn main:app --host 0.0.0.0 --port 8080 &
+
+      # Створення користувача для сервісу (безпека)
+      useradd -m -s /bin/bash vsafe_user
+      chown -R vsafe_user:vsafe_user /opt/vectasafe
+
+      # Створення Systemd сервісу
+      cat <<EOF > /etc/systemd/system/vectasafe.service
+      [Unit]
+      Description=VectaSafe API
+      After=network.target
+
+      [Service]
+      User=vsafe_user
+      WorkingDirectory=/opt/vectasafe
+      ExecStart=/usr/local/bin/uvicorn main:app --host 0.0.0.0 --port 8080
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+      EOF
+
+      systemctl daemon-reload
+      systemctl enable vectasafe.service
+      systemctl start vectasafe.service
     EOT
   }
 }
