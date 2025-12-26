@@ -9,5 +9,5 @@ variable "region" {
 }
 
 variable "kms_key_link" {
-  type        = string
+  type = string
 }

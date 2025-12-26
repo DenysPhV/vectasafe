@@ -92,10 +92,24 @@ resource "google_compute_region_autoscaler" "autoscaler" {
   target = google_compute_region_instance_group_manager.mig.id
 
   autoscaling_policy {
-    max_replicas    = 5
-    min_replicas    = 2
+    max_replicas = 5
+    min_replicas = 2
     cpu_utilization {
       target = 0.6 # Масштабування при 60% CPU
     }
   }
+}
+
+# Дозвіл на запис логів
+resource "google_project_iam_member" "logging" {
+  project = var.project_id # Потрібно додати змінну project_id в variables.tf цього модуля
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.vsafe_sa.email}"
+}
+
+# Дозвіл на запис метрик (CPU, RAM usage)
+resource "google_project_iam_member" "monitoring" {
+  project = var.project_id
+  role    = "roles/monitoring.metricWriter"
+  member  = "serviceAccount:${google_service_account.vsafe_sa.email}"
 }

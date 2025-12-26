@@ -14,7 +14,7 @@ variable "network_id" {
 }
 
 variable "db_password" {
-  type = string
+  type      = string
   sensitive = true
 }
 
