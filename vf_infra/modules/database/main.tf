@@ -21,8 +21,9 @@ resource "google_sql_database_instance" "vectasafe_db" {
   region           = var.region
 
   settings {
-    tier = "db-g1-small"
-
+    tier = "db-custom-1-3840"
+    # ВМИКАЄМО MULTI-AZ (High Availability)
+    availability_type = "REGIONAL"
     # Налаштування безпеки
     ip_configuration {
       ipv4_enabled    = true
@@ -35,8 +36,9 @@ resource "google_sql_database_instance" "vectasafe_db" {
     }
 
     backup_configuration {
-      enabled    = true
-      start_time = "03:00"
+      enabled            = true
+      binary_log_enabled = true # Потрібно для Point-in-time recovery та HA
+      start_time         = "03:00"
     }
   }
 
