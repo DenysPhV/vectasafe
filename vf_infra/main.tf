@@ -19,18 +19,20 @@ module "api_servers" {
   source            = "./modules/api_servers"
   region            = var.region
   project_id        = var.project_id
-  subnetwork_id     = module.network.subnetwork_id # Зв'язка модулів
+  subnetwork_id     = module.network.subnetwork_id
   vault_bucket_name = module.storage.bucket_name
-  machine_type      = "e2-standard-2"
+  machine_type      = var.machine_type
   min_replicas      = 2
   max_replicas      = 10
+  db_connection_name = module.database.connection_name
+  db_secret_id       = module.database.db_secret_id
 }
 
 module "load_balancer" {
   source     = "./modules/load_balancer"
   project_id = var.project_id
   region     = var.region
-  lb_name    = "vectasafe-prod" # Можна змінювати для dev/stage
+  lb_name    = "vectasafe-${var.lb_name}" # Можна змінювати для prod/stage
   # Отримуємо ID групи інстансів з модуля api_servers
   backend_instance_group = module.api_servers.instance_group
   domain_name            = var.domain_name

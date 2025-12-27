@@ -13,6 +13,11 @@ variable "db_password" {
   sensitive = true
 }
 
+variable "machine_type" {
+  description = "Тип VM (напр. e2-medium або n1-standard-4 для GPU)"
+  type        = string
+}
+
 variable "static_ip" {
   type = string
 }
@@ -29,4 +34,9 @@ variable "key_ring_name" {
 variable "key_name" {
   description = "Назва крипто-ключа"
   type        = string
+}
+
+variable "lb_name" {
+  description = "Load balancer name of state"
+  type = string
 }

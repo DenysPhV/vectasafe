@@ -19,7 +19,6 @@ variable "domain_name" {
 }
 
 variable "lb_name" {
-  description = "Базова назва для ресурсів LB"
+  description = "Load balancer name of state"
   type        = string
-  default     = "vectasafe-lb"
 }

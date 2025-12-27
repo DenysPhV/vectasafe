@@ -1,7 +1,10 @@
+variable "region" {
+  type = string
+}
+
 variable "machine_type" {
   description = "Тип VM (напр. e2-medium або n1-standard-4 для GPU)"
   type        = string
-  default     = "e2-medium"
 }
 
 variable "project_id" {
@@ -9,8 +12,9 @@ variable "project_id" {
   type        = string
 }
 
-variable "region" {
-  type = string
+variable "db_secret_id" {
+  description = "ID секрету з паролем від БД"
+  type        = string
 }
 
 variable "subnetwork_id" {
@@ -32,4 +36,9 @@ variable "max_replicas" {
 
 variable "vault_bucket_name" {
   type = string
+}
+
+variable "db_connection_name" {
+  description = "Connection Name екземпляра Cloud SQL (project:region:instance)"
+  type        = string
 }
