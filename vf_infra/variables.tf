@@ -38,5 +38,5 @@ variable "key_name" {
 
 variable "lb_name" {
   description = "Load balancer name of state"
-  type = string
+  type        = string
 }

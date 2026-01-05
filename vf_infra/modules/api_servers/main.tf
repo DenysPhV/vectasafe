@@ -40,7 +40,7 @@ resource "google_compute_instance_template" "api_tpl" {
   }
 
   metadata = {
-# Ми використовуємо templatefile, або просто інтерполяцію змінних, якщо це heredoc
+    # Ми використовуємо templatefile, або просто інтерполяцію змінних, якщо це heredoc
     startup-script = templatefile("${path.root}/scripts/startup.sh", {
       db_secret_id       = var.db_secret_id
       db_connection_name = var.db_connection_name
@@ -75,13 +75,13 @@ resource "google_compute_region_autoscaler" "autoscaler" {
     min_replicas = var.min_replicas
     # Масштабування по CPU (60%)
     cpu_utilization {
-      target = 0.6 
+      target = 0.6
     }
     # Масштабування по пам'яті (RAM) - потребує Ops Agent
     # Використовуємо метрику агента
     metric {
       name   = "agent.googleapis.com/memory/percent_used"
-      target = 70  # Масштабуємося, якщо RAM > 70%
+      target = 70 # Масштабуємося, якщо RAM > 70%
       type   = "GAUGE"
     }
   }

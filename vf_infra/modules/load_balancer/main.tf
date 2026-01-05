@@ -7,9 +7,9 @@ resource "google_compute_health_check" "http_check" {
   }
 }
 
-# Backend Service
-resource "google_compute_backend_service" "default" {
-  name          = "${var.lb_name}-backend"
+# 1. API Backend Service (Основний API)
+resource "google_compute_backend_service" "api_backend" {
+  name          = "${var.lb_name}-api-backend"
   health_checks = [google_compute_health_check.http_check.id]
   port_name     = "http"
   protocol      = "HTTP"
@@ -19,10 +19,38 @@ resource "google_compute_backend_service" "default" {
   }
 }
 
+# 2. Upload Backend Service (Новий сервіс для завантажень)
+resource "google_compute_backend_service" "upload_backend" {
+  name          = "${var.lb_name}-upload-backend"
+  health_checks = [google_compute_health_check.http_check.id] # Можна створити окремий HC, якщо потрібно
+  port_name     = "http"
+  protocol      = "HTTP"
+
+  backend {
+    group = var.upload_instance_group
+  }
+}
+
 # URL Map
 resource "google_compute_url_map" "default" {
   name            = "${var.lb_name}-url-map"
-  default_service = google_compute_backend_service.default.id
+  default_service = google_compute_backend_service.api_backend.id
+
+  host_rule {
+    hosts        = ["*"] # Або конкретний домен var.domain_name
+    path_matcher = "main-paths"
+  }
+
+  path_matcher {
+    name            = "main-paths"
+    default_service = google_compute_backend_service.api_backend.id
+
+    # Правило для Upload Service
+    path_rule {
+      paths   = ["/upload", "/upload/*"]
+      service = google_compute_backend_service.upload_backend.id
+    }
+  }
 }
 
 # SSL Certificate
