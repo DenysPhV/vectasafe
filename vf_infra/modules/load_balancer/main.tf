@@ -17,6 +17,8 @@ resource "google_compute_backend_service" "api_backend" {
   backend {
     group = var.backend_instance_group
   }
+
+  security_policy = google_compute_security_policy.security_policy.id
 }
 
 # 2. Upload Backend Service (Новий сервіс для завантажень)
@@ -29,6 +31,8 @@ resource "google_compute_backend_service" "upload_backend" {
   backend {
     group = var.upload_instance_group
   }
+
+  security_policy = google_compute_security_policy.security_policy.id
 }
 
 # URL Map
@@ -74,4 +78,47 @@ resource "google_compute_global_forwarding_rule" "default" {
   name       = "${var.lb_name}-forwarding-rule"
   target     = google_compute_target_https_proxy.default.id
   port_range = "443"
+}
+
+# --- Cloud Armor Security Policy ---
+resource "google_compute_security_policy" "security_policy" {
+  name        = "${var.lb_name}-security-policy"
+  description = "Basic WAF & DDoS protection"
+
+  # Правило 1: Захист від SQL Injection (примитивний приклад, базовий набір)
+  rule {
+    action   = "deny(403)"
+    priority = "1000"
+    match {
+      expr {
+        expression = "evaluatePreconfiguredExpr('sqli-v33-stable')"
+      }
+    }
+    description = "Block SQL Injection attacks"
+  }
+
+  # Правило 2: Захист від XSS
+  rule {
+    action   = "deny(403)"
+    priority = "1001"
+    match {
+      expr {
+        expression = "evaluatePreconfiguredExpr('xss-v33-stable')"
+      }
+    }
+    description = "Block XSS attacks"
+  }
+
+  # Правило за замовчуванням: Дозволити все інше
+  rule {
+    action   = "allow"
+    priority = "2147483647"
+    match {
+      versioned_expr = "SRC_IPS_V1"
+      config {
+        src_ip_ranges = ["*"]
+      }
+    }
+    description = "Default allow"
+  }
 }

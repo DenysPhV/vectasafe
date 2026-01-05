@@ -67,3 +67,22 @@ resource "google_compute_firewall" "allow_iap_ssh" {
   # Застосовуємо тільки до наших бекенд-серверів
   target_tags = ["vectasafe-backend"]
 }
+
+# --- IAP SSH Firewall Rule ---
+# Дозволяє підключатися по SSH тільки через Identity-Aware Proxy
+# gcloud compute ssh --tunnel-through-iap ...
+resource "google_compute_firewall" "iap_ssh" {
+  name    = "${var.network_name}-allow-iap-ssh"
+  network = google_compute_network.vpc.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+
+  # Це діапазон IP, який використовує Google IAP для підключення до твоїх VM
+  source_ranges = ["35.235.240.0/20"]
+  
+  # Застосовуємо до всіх інстансів (або можна використати target_tags)
+  # target_tags = ["vectasafe-backend"] 
+}
