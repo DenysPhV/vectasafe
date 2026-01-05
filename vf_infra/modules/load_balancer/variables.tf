@@ -13,6 +13,11 @@ variable "backend_instance_group" {
   type        = string
 }
 
+variable "upload_instance_group" {
+  description = "Посилання на Instance Group для Upload Service"
+  type        = string
+}
+
 variable "domain_name" {
   description = "Доменне ім'я для SSL сертифікату (напр. api.vectasafe.com)"
   type        = string
