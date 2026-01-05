@@ -44,7 +44,7 @@ resource "google_sql_database_instance" "vectasafe_db" {
 
   # Захист від випадкового видалення через Terraform
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
 

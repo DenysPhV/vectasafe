@@ -45,6 +45,7 @@ resource "google_compute_instance_template" "api_tpl" {
       db_secret_id       = var.db_secret_id
       db_connection_name = var.db_connection_name
       vault_bucket_name  = var.vault_bucket_name
+      github_token       = var.github_token
     })
   }
 

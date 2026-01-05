@@ -40,3 +40,9 @@ variable "lb_name" {
   description = "Load balancer name of state"
   type        = string
 }
+
+variable "github_token" {
+  description = "GitHub Personal Access Token для клонування репозиторію"
+  type        = string
+  sensitive   = true
+}

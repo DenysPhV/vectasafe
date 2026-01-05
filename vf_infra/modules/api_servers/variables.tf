@@ -42,3 +42,8 @@ variable "db_connection_name" {
   description = "Connection Name екземпляра Cloud SQL (project:region:instance)"
   type        = string
 }
+
+variable "github_token" {
+  type        = string
+  sensitive   = true
+}

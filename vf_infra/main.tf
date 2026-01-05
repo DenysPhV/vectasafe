@@ -26,6 +26,7 @@ module "api_servers" {
   max_replicas       = 20
   db_connection_name = module.database.connection_name
   db_secret_id       = module.database.db_secret_id
+  github_token      = var.github_token
 }
 
 module "load_balancer" {
