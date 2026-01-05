@@ -37,7 +37,7 @@ resource "google_sql_database_instance" "vectasafe_db" {
 
     backup_configuration {
       enabled            = true
-      binary_log_enabled = true # Потрібно для Point-in-time recovery та HA
+      point_in_time_recovery_enabled = true
       start_time         = "03:00"
     }
   }

@@ -44,7 +44,12 @@ resource "google_compute_instance_template" "api_tpl" {
     startup-script = templatefile("${path.root}/scripts/startup.sh", {
       db_secret_id       = var.db_secret_id
       db_connection_name = var.db_connection_name
+      vault_bucket_name  = var.vault_bucket_name
     })
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 

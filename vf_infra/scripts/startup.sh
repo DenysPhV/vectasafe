@@ -44,6 +44,8 @@ git clone https://github.com/DenysPhV/vectasafe.git /opt/vectasafe
 cd /opt/vectasafe
 docker build -t vectasafe-backend:latest .
 
+# Отримуємо назву бакета з Terraform template
+BUCKET_NAME="${vault_bucket_name}"
 # Створення сервісу VectaSafe (Docker Run)
 # Додаємо змінні оточення для підключення до БД через localhost
 cat <<EOF > /etc/systemd/system/vectasafe.service
@@ -67,6 +69,7 @@ ExecStart=/usr/bin/docker run --rm --network="host" --name vectasafe_app \
   -e DB_USER=vsafe_admin \
   -e DB_NAME=vectasafe \
   -e DB_PASS=$DB_PASSWORD \
+  -e BUCKET_NAME=$BUCKET_NAME \
   vectasafe-backend:latest
       
 # Зупинка контейнера при зупинці сервісу

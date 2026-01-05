@@ -122,3 +122,18 @@ resource "google_compute_security_policy" "security_policy" {
     description = "Default allow"
   }
 }
+
+# --- ТИМЧАСОВИЙ ДОСТУП ПО HTTP (для тесту без домену) ---
+
+# 1. HTTP Проксі (те ж саме, що HTTPS, але без сертифікату)
+resource "google_compute_target_http_proxy" "http_proxy" {
+  name    = "${var.lb_name}-http-proxy"
+  url_map = google_compute_url_map.default.id
+}
+
+# 2. Правило переадресації для порту 80
+resource "google_compute_global_forwarding_rule" "http_rule" {
+  name       = "${var.lb_name}-http-forwarding-rule"
+  target     = google_compute_target_http_proxy.http_proxy.id
+  port_range = "80"
+}
