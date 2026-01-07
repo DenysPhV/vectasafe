@@ -19,6 +19,7 @@ resource "google_sql_database_instance" "vectasafe_db" {
   name             = "vsafe-db-${var.project_id}"
   database_version = "POSTGRES_14"
   region           = var.region
+  deletion_protection = false
 
   settings {
     tier = "db-custom-1-3840"

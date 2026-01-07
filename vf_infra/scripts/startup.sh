@@ -40,7 +40,10 @@ systemctl enable cloud-sql-proxy
 systemctl start cloud-sql-proxy
 
 # Налаштування застосунку VectaSafe
-git clone https://${github_token}@github.com/DenysPhV/vectasafe.git /opt/vectasafe
+git clone https://${github_token}@github.com/DenysPhV/vectasafe.git /tmp/temp_repo
+mv /tmp/temp_repo/backend /opt/vectasafe
+rm -rf /tmp/temp_repo
+
 cd /opt/vectasafe
 docker build -t vectasafe-backend:latest .
 
