@@ -61,5 +61,9 @@ module "storage" {
   depends_on = [module.kms]
 }
 
-
+resource "google_project_service" "sqladmin" {
+  project            = var.project_id
+  service            = "sqladmin.googleapis.com"
+  disable_on_destroy = false
+}
 

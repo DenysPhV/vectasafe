@@ -5,8 +5,10 @@
 - Change YOUR_SECURE_PASSWORD on your real pass
 `echo -n "YOUR_SECURE_PASSWORD" | gcloud secrets versions add vsafe-db-password --data-file=-`
 
-- Migration state (if kyes alredy)
+- Migration state (if kyes alredy) Що треба зробити одразу після помилки (або перед apply)
+  1. Імпорт в'язки
 `terraform state mv google_kms_key_ring.vsafe_ring module.kms.google_kms_key_ring.key_ring`
+  2. Імпорт ключа (якщо він теж існує)
 `terraform state mv google_kms_crypto_key.vsafe_storage_key module.kms.google_kms_crypto_key.storage_key`
 
 - Знайди ім'я інстансу

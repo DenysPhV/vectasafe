@@ -106,3 +106,10 @@ resource "google_project_iam_member" "monitoring" {
   role    = "roles/monitoring.metricWriter"
   member  = "serviceAccount:${google_service_account.vsafe_sa.email}"
 }
+
+# Додаємо роль Cloud SQL Client до сервісного акаунту
+resource "google_project_iam_member" "sql_client" {
+  project = var.project_id
+  role    = "roles/cloudsql.client"
+  member  = "serviceAccount:${google_service_account.vsafe_sa.email}"
+}
