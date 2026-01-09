@@ -1,12 +1,12 @@
 # Створюємо ідентичність для серверів VectaSafe
 resource "google_service_account" "vsafe_sa" {
-  account_id   = "vsafe-api-sa"
+  account_id   = "${var.project_name}-api-sa-${var.environment}"
   display_name = "Service Account for VectaSafe API & Workers"
 }
 
 # Надаємо доступ до бакета зі сховищем (Розділ 7 Архітектури)
 resource "google_storage_bucket_iam_member" "vault_access" {
-  bucket = var.vault_bucket_name
+  bucket = "${var.project_name}-${var.vault_bucket_name}-api-sa-${var.environment}"
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${google_service_account.vsafe_sa.email}"
 }
@@ -21,9 +21,9 @@ resource "google_secret_manager_secret_iam_member" "db_pass_access" {
 
 # Instance Template - Конфігурація "імутабельної" машини
 resource "google_compute_instance_template" "api_tpl" {
-  name_prefix  = "vectasafe-tpl-"
+  name_prefix  = "${var.project_name}-tpl-${var.environment}-"
   machine_type = var.machine_type
-  tags         = ["vectasafe-backend"]
+  tags         = ["${var.project_name}-backend-${var.environment}"]
 
   disk {
     source_image = "debian-cloud/debian-11"
@@ -56,8 +56,8 @@ resource "google_compute_instance_template" "api_tpl" {
 
 # Managed Instance Group (MIG)
 resource "google_compute_region_instance_group_manager" "mig" {
-  name               = "vectasafe-mig"
-  base_instance_name = "vsafe"
+  name               = "${var.project_name}-mig-${var.environment}"
+  base_instance_name = "${var.project_name}-instance-api-${var.environment}"
   region             = var.region
 
   version {
@@ -72,7 +72,7 @@ resource "google_compute_region_instance_group_manager" "mig" {
 
 # Autoscaler - Динамічне масштабування (Розділ 8 діаграми)
 resource "google_compute_region_autoscaler" "autoscaler" {
-  name   = "vectasafe-autoscaler"
+  name   = "${var.project_name}-autoscaler-${var.environment}"
   region = var.region
   target = google_compute_region_instance_group_manager.mig.id
 

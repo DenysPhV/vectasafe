@@ -3,10 +3,20 @@ variable "project_id" {
   type        = string
 }
 
+variable "project_name" {
+  description = "NAME проекту GCP"
+  type        = string
+}
+
 variable "region" {
   description = "Регіон розгортання ключів"
   type        = string
 }
+
+variable "environment" {
+  type = string
+}
+
 
 variable "key_ring_name" {
   description = "Назва Key Ring"

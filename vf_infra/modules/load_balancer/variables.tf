@@ -3,9 +3,18 @@ variable "project_id" {
   type        = string
 }
 
+variable "project_name" {
+  description = "NAME проекту GCP"
+  type        = string
+}
+
 variable "region" {
   description = "Регіон розгортання"
   type        = string
+}
+
+variable "environment" {
+  type = string
 }
 
 variable "backend_instance_group" {

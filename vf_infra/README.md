@@ -1,4 +1,6 @@
 # VectaSafe
+- Before to first start init 
+`gcloud storage buckets create gs://vectasafe-tf-state-dev --project=vectasafe-infra --location=us-central1 --uniform-bucket-level-access` 
 - Create secret remote
 `gcloud secrets create vsafe-db-password --replication-policy="automatic"`
 

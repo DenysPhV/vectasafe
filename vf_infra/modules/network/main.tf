@@ -1,23 +1,23 @@
 resource "google_compute_network" "vpc" {
-  name                    = var.network_name
+  name                    = "${var.project_name}-${var.network_name}-${var.environment}"
   auto_create_subnetworks = false
 }
 
 resource "google_compute_subnetwork" "subnet" {
-  name          = "${var.network_name}-subnet"
-  ip_cidr_range = "10.0.1.0/24"
+  name          = "${var.project_name}-${var.network_name}-subnet-${var.environment}"
+  ip_cidr_range = var.subnet_cidr
   region        = var.region
   network       = google_compute_network.vpc.id
 }
 # 1. Створюємо роутер
 resource "google_compute_router" "router" {
-  name    = "vsafe-router"
+  name    = "${var.project_name}-router-${var.environment}"
   network = google_compute_network.vpc.id
   region  = var.region
 }
 # 2. Створюємо NAT (шлюз в інтернет)
 resource "google_compute_router_nat" "nat" {
-  name                               = "vsafe-nat"
+  name                               = "${var.project_name}-nat-${var.environment}"
   router                             = google_compute_router.router.name
   region                             = var.region
   nat_ip_allocate_option             = "AUTO_ONLY"
@@ -25,7 +25,7 @@ resource "google_compute_router_nat" "nat" {
 }
 # 3. Налаштування для приватної бази даних (Private Service Access)
 resource "google_compute_global_address" "private_ip_address" {
-  name          = "vsafe-private-ip"
+  name          = "${var.project_name}-private-ip-${var.environment}"
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
   prefix_length = 16
@@ -40,20 +40,20 @@ resource "google_service_networking_connection" "private_vpc_connection" {
 
 # Firewall: дозволяємо трафік від Load Balancer до наших VM
 resource "google_compute_firewall" "allow_lb" {
-  name    = "allow-health-check"
+  name    = "${var.project_name}-allow-health-check-${var.environment}"
   network = google_compute_network.vpc.name
 
   allow {
     protocol = "tcp"
     ports    = ["80", "8080"]
   }
-
-  source_ranges = ["130.211.0.0/22", "35.191.0.0/16"] # Діапазони Google LB
-  target_tags   = ["vectasafe-backend"]
+  # prebring
+  source_ranges = var.private_source_ranges
+  target_tags   = ["${var.project_name}-backend-${var.environment}"]
 }
 
 resource "google_compute_firewall" "allow_iap_ssh" {
-  name    = "allow-iap-ssh"
+  name    = "${var.project_name}-allow-iap-ssh-${var.environment}"
   network = google_compute_network.vpc.name
 
   allow {
@@ -62,17 +62,17 @@ resource "google_compute_firewall" "allow_iap_ssh" {
   }
 
   # Цей діапазон є статичним для сервісу Google IAP
-  source_ranges = ["35.235.240.0/20"]
+  source_ranges = var.allow_iap_ssh_source_ranges
 
   # Застосовуємо тільки до наших бекенд-серверів
-  target_tags = ["vectasafe-backend"]
+  target_tags = ["${var.project_name}-backend-${var.environment}"]
 }
 
 # --- IAP SSH Firewall Rule ---
 # Дозволяє підключатися по SSH тільки через Identity-Aware Proxy
 # gcloud compute ssh --tunnel-through-iap ...
 resource "google_compute_firewall" "iap_ssh" {
-  name    = "${var.network_name}-allow-iap-ssh"
+  name    = "${var.project_name}-${var.network_name}-allow-iap-ssh-${var.environment}"
   network = google_compute_network.vpc.name
 
   allow {
@@ -81,8 +81,8 @@ resource "google_compute_firewall" "iap_ssh" {
   }
 
   # Це діапазон IP, який використовує Google IAP для підключення до твоїх VM
-  source_ranges = ["35.235.240.0/20"]
-  
+  source_ranges = var.allow_iap_ssh_source_ranges
+
   # Застосовуємо до всіх інстансів (або можна використати target_tags)
-  # target_tags = ["vectasafe-backend"] 
+  target_tags = ["${var.project_name}-backend-${var.environment}"]
 }

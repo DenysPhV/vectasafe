@@ -16,30 +16,30 @@ resource "google_secret_manager_secret_version" "db_pass_version" {
 }
 
 resource "google_sql_database_instance" "vectasafe_db" {
-  name             = "vsafe-db-${var.project_id}"
-  database_version = "POSTGRES_14"
-  region           = var.region
+  name                = "${var.project_name}-db"
+  database_version    = "POSTGRES_14"
+  region              = var.region
   deletion_protection = false
 
   settings {
-    tier = "db-custom-1-3840"
-    # ВМИКАЄМО MULTI-AZ (High Availability)
-    availability_type = "REGIONAL"
+    tier              = var.db_tier
+    availability_type = var.availability_type
+
     # Налаштування безпеки
     ip_configuration {
       ipv4_enabled    = true
       private_network = var.network_id
       ssl_mode        = "ENCRYPTED_ONLY"
       authorized_networks {
-        name  = "office-vpn"
+        name  = "${var.project_name}-vpn-${var.environment}"
         value = var.static_ip
       }
     }
 
     backup_configuration {
-      enabled            = true
+      enabled                        = true
       point_in_time_recovery_enabled = true
-      start_time         = "03:00"
+      start_time                     = "03:00"
     }
   }
 
@@ -50,13 +50,13 @@ resource "google_sql_database_instance" "vectasafe_db" {
 }
 
 resource "google_sql_database" "database" {
-  name     = "vectasafe"
+  name     = "${var.project_name}-db"
   instance = google_sql_database_instance.vectasafe_db.name
 }
 
 # Створення користувача для API
 resource "google_sql_user" "vsafe_api_users" {
-  name     = "vsafe_admin"
+  name     = "${var.project_name}-admin"
   instance = google_sql_database_instance.vectasafe_db.name
   password = var.db_password
 }
