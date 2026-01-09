@@ -1,14 +1,23 @@
+variable "project_id" {
+  description = "Назва проекту"
+  type        = string
+}
+
+variable "project_name" {
+  description = "NAME проекту GCP"
+  type        = string
+}
+
 variable "region" {
+  type = string
+}
+
+variable "environment" {
   type = string
 }
 
 variable "machine_type" {
   description = "Тип VM (напр. e2-medium або n1-standard-4 для GPU)"
-  type        = string
-}
-
-variable "project_id" {
-  description = "Назва проекту"
   type        = string
 }
 
@@ -44,6 +53,6 @@ variable "db_connection_name" {
 }
 
 variable "github_token" {
-  type        = string
-  sensitive   = true
+  type      = string
+  sensitive = true
 }

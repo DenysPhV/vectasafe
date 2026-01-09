@@ -2,8 +2,8 @@ terraform {
   required_version = ">= 1.0"
 
   backend "gcs" {
-    bucket = "vectasafe-tf-state-unique-id" # Назва вашого GCS бакета
-    prefix = "terraform/state"              # Шлях всередині бакета
+    bucket = "vectasafe-tf-state-dev"
+    prefix = "terraform/state" # Шлях всередині бакета
   }
 
   required_providers {

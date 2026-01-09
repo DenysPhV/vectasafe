@@ -3,9 +3,18 @@ variable "project_id" {
   type        = string
 }
 
+variable "project_name" {
+  description = "NAME проекту GCP"
+  type        = string
+}
+
 variable "region" {
   description = "Регіон розгортання (напр. us-central1)"
   type        = string
+}
+
+variable "environment" {
+  type = string
 }
 
 variable "network_id" {
@@ -21,3 +30,11 @@ variable "db_password" {
 variable "static_ip" {
   type = string
 }
+
+variable "db_tier" {
+  type = string
+}
+
+variable "availability_type" {
+  type = string
+}  
