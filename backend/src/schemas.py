@@ -14,6 +14,13 @@ class DocumentUploadComplete(DocumentBase):
     # Тимчасовий ключ сесії (тільки для MVP, в проді береться з JWT)
     temp_session_key_hex: str 
 
+class UploadCompleteRequest(BaseModel):
+    s3_path: str
+    doc_key_enc_hex: str
+    iv_hex: str
+    # Ключ зашифрований публічним ключем сервера, а не просто string
+    encrypted_session_payload: str
+
 # --- Вихідні дані (Response) ---
 class DocumentResponse(DocumentBase):
     id: UUID4

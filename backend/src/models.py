@@ -1,14 +1,15 @@
 # src/models.py
+import uuid6
+
 from sqlalchemy import Column, String, Boolean, ForeignKey, LargeBinary, DateTime, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declarative_base
-import uuid
 
 Base = declarative_base()
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid6.uuid7)
     email = Column(String, unique=True, index=True, nullable=False)
     # Зберігаємо зашифрований приватний ключ (AES-KW) [cite: 9]
     encrypted_private_key = Column(LargeBinary, nullable=False)
@@ -16,7 +17,7 @@ class User(Base):
 
 class Document(Base):
     __tablename__ = "documents"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid6.uuid7)
     owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     s3_path = Column(String, unique=True, nullable=False)
     

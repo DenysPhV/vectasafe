@@ -1,4 +1,6 @@
 # src/main.py
+import uuid
+
 from fastapi import FastAPI, UploadFile, File, Form, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from arq import create_pool
@@ -6,7 +8,8 @@ from arq.connections import RedisSettings
 
 from database import get_db, init_db
 from models import Document, User
-import uuid
+
+from vectasafe.backend.src.schemas import UploadCompleteRequest
 
 app = FastAPI(title="Vecta Safe MVP")
 
@@ -20,11 +23,7 @@ async def startup():
 
 @app.post("/upload/complete")
 async def complete_upload(
-    s3_path: str = Form(...),
-    doc_key_enc_hex: str = Form(...), # Зашифрований клієнтом ключ
-    iv_hex: str = Form(...),
-    # В реальності session_key береться з Auth Middleware (JWT)
-    temp_session_key: str = Form(...), 
+    payload: UploadCompleteRequest,
     db: AsyncSession = Depends(get_db),
     redis = Depends(get_redis)
 ):

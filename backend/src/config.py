@@ -1,13 +1,24 @@
 # src/config.py
 from pydantic_settings import BaseSettings
+from pydantic import Field
 
 class Settings(BaseSettings):
     # App
     APP_NAME: str = "Vecta Safe MVP"
-    SECRET_KEY: str = "change_me_in_prod_please" # Для JWT токенів
+    SECRET_KEY: str = Field(..., alias="VECTA_SECRET_KEY")
 
     # Database (PostgreSQL)
-    DB_URL: str = "postgresql+asyncpg://user:pass@db:5432/vectasafe"
+    DB_USER: str = Field(..., alias="POSTGRES_USER")
+    DB_PASSWORD: str = Field(..., alias="POSTGRES_PASSWORD")
+    DB_HOST: str = Field("db", alias="POSTGRES_HOST")
+    DB_NAME: str = Field("vectasafe", alias="POSTGRES_DB")
+
+    @property
+    def DB_URL(self) -> str:
+        return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:5432/{self.DB_NAME}"
+
+    class Config:
+        env_file = ".env" 
 
     # Queue (Redis)
     REDIS_HOST: str = "redis"
