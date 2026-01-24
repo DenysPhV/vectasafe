@@ -56,7 +56,7 @@ resource "google_sql_database" "database" {
 
 # Створення користувача для API
 resource "google_sql_user" "vsafe_api_users" {
-  name     = "${var.project_name}-admin"
+  name     = var.db_name
   instance = google_sql_database_instance.vectasafe_db.name
   password = var.db_password
 }

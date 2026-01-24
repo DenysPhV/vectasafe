@@ -69,6 +69,7 @@ module "database" {
 
   db_password       = var.db_password #google_secret_manager_secret_version.db_pass_version.secret_data
   db_tier           = var.db_tier
+  db_name = var.db_name
   availability_type = var.db_availability_type
   depends_on        = [module.network]
 }

@@ -58,15 +58,34 @@ resource "google_compute_url_map" "default" {
 }
 
 # SSL Certificate
+# 1. Додаємо генератор випадкового суфікса
+resource "random_id" "cert_name_suffix" {
+  byte_length = 4
+  
+  keepers = {
+    # Генеруємо новий суфікс, тільки якщо змінюється домен.
+    # Це гарантує, що при зміні домену створиться зовсім новий ресурс сертифіката.
+    domains = var.domain_name
+  }
+}
+# 2. Використовуємо цей суфікс в імені сертифіката
 resource "google_compute_managed_ssl_certificate" "default" {
-  name = "${var.project_name}-${var.lb_name}-${var.environment}-cert"
+  name = "${var.project_name}-${var.lb_name}-${var.environment}-cert-${random_id.cert_name_suffix.hex}"
 
   managed {
     domains = [var.domain_name]
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # HTTPS Proxy
+resource "google_compute_global_address" "lb_ip" {
+  name = "${var.project_name}-${var.lb_name}-ip-${var.environment}"
+}
+
 resource "google_compute_target_https_proxy" "default" {
   name             = "${var.project_name}-${var.lb_name}-https-proxy-${var.environment}"
   url_map          = google_compute_url_map.default.id
@@ -78,6 +97,7 @@ resource "google_compute_global_forwarding_rule" "default" {
   name       = "${var.lb_name}-forwarding-rule-${var.environment}"
   target     = google_compute_target_https_proxy.default.id
   port_range = "443"
+  ip_address = google_compute_global_address.lb_ip.address
 }
 
 # --- Cloud Armor Security Policy ---
@@ -136,4 +156,5 @@ resource "google_compute_global_forwarding_rule" "http_rule" {
   name       = "${var.project_name}-${var.lb_name}-http-forwarding-rule-${var.environment}"
   target     = google_compute_target_http_proxy.http_proxy.id
   port_range = "80"
+  ip_address = google_compute_global_address.lb_ip.address
 }

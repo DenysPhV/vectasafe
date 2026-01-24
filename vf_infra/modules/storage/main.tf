@@ -8,7 +8,7 @@ resource "google_storage_bucket" "vault" {
   }
 
   encryption {
-    default_kms_key_name = "${var.project_name}-${var.kms_key_link}" # Опціонально для Enterprise KMS
+    default_kms_key_name = var.kms_key_link # Опціонально для Enterprise KMS
   }
 
   lifecycle_rule {

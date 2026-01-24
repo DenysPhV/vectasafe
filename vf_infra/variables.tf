@@ -43,6 +43,12 @@ variable "db_password" {
   sensitive   = true
 }
 
+variable "db_name" {
+  description = "Name адміністратора БД"
+  type        = string
+  sensitive   = true
+}
+
 variable "db_tier" {
   description = "Тип інстансу БД (напр. db-f1-micro для dev)"
   type        = string

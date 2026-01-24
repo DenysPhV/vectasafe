@@ -6,7 +6,7 @@ resource "google_service_account" "vsafe_sa" {
 
 # Надаємо доступ до бакета зі сховищем (Розділ 7 Архітектури)
 resource "google_storage_bucket_iam_member" "vault_access" {
-  bucket = "${var.project_name}-${var.vault_bucket_name}-api-sa-${var.environment}"
+  bucket = var.vault_bucket_name
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${google_service_account.vsafe_sa.email}"
 }
