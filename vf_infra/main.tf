@@ -23,6 +23,12 @@ module "network" {
   allow_iap_ssh_source_ranges = var.allow_iap_ssh_source_ranges
 }
 
+resource "google_storage_bucket_object" "backend_code" {
+  name   = "backend-${data.archive_file.backend_zip.output_md5}.zip"
+  bucket = module.storage.bucket_name # Беремо ім'я бакета з модуля storage
+  source = data.archive_file.backend_zip.output_path
+}
+
 module "api_servers" {
   source            = "./modules/api_servers"
   region            = var.region
@@ -37,8 +43,14 @@ module "api_servers" {
   min_replicas = var.min_replicas
   max_replicas = var.max_replicas
 
+  db_private_ip = module.database.private_ip
+  db_password   = var.db_password
   db_connection_name = module.database.connection_name
   db_secret_id       = module.database.db_secret_id
+
+  code_bucket   = module.storage.bucket_name # Де лежить код
+  code_archive  = google_storage_bucket_object.backend_code.name # Ім'я архіву
+  
   github_token       = var.github_token
 }
 
@@ -69,7 +81,7 @@ module "database" {
 
   db_password       = var.db_password #google_secret_manager_secret_version.db_pass_version.secret_data
   db_tier           = var.db_tier
-  db_name = var.db_name
+  db_name           = var.db_name
   availability_type = var.db_availability_type
   depends_on        = [module.network]
 }

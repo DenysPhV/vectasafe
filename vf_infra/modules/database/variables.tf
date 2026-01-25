@@ -24,13 +24,13 @@ variable "network_id" {
 
 variable "db_password" {
   description = "Password for the DB user"
-  type      = string
-  sensitive = true
+  type        = string
+  sensitive   = true
 }
 
 variable "db_name" {
-  type        = string
-  sensitive   = true
+  type      = string
+  sensitive = true
 }
 
 variable "static_ip" {

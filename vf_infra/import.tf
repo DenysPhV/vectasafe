@@ -8,3 +8,9 @@ data "google_storage_project_service_account" "gcs_account" {
 #   version = "latest"
 # }
 
+data "archive_file" "backend_zip" {
+  type        = "zip"
+  source_dir  = "${path.module}/../backend" # Шлях до папки з кодом
+  output_path = "${path.module}/backend.zip"
+  excludes    = ["__pycache__", ".git", ".env", "venv"] # Ігноруємо сміття
+}

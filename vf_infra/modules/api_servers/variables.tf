@@ -52,6 +52,11 @@ variable "db_connection_name" {
   type        = string
 }
 
+variable "db_private_ip" { description = "Private IP of the Cloud SQL instance" }
+variable "db_password"   { description = "Database password" }
+variable "code_bucket"   { description = "GCS bucket name with code" }
+variable "code_archive"  { description = "Name of the zip file with code" }
+
 variable "github_token" {
   type      = string
   sensitive = true

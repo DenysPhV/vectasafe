@@ -9,9 +9,9 @@
 
 - Migration state (if kyes alredy) Що треба зробити одразу після помилки (або перед apply)
   1. Імпорт в'язки
-`terraform state mv google_kms_key_ring.vsafe_ring module.kms.google_kms_key_ring.key_ring`
+`terraform import module.kms.google_kms_key_ring.key_ring projects/vectasafe-infra/locations/us-central1/keyRings/vectasafe-key-ring-dev`
   2. Імпорт ключа (якщо він теж існує)
-`terraform state mv google_kms_crypto_key.vsafe_storage_key module.kms.google_kms_crypto_key.storage_key`
+`terraform import module.kms.google_kms_crypto_key.storage_key projects/vectasafe-infra/locations/us-central1/keyRings/vectasafe-key-ring-dev/cryptoKeys/storage-key-dev`
 
 - Знайди ім'я інстансу
 `gcloud compute instances list`
