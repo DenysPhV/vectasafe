@@ -12,3 +12,8 @@ output "db_secret_id" {
   description = "ID секрету пароля БД в Secret Manager"
   value       = google_secret_manager_secret.db_pass_secret.secret_id
 }
+
+output "private_ip" {
+  description = "The private IP address of the main database instance"
+  value       = google_sql_database_instance.vectasafe_db.private_ip_address
+}

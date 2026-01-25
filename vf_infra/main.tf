@@ -50,8 +50,10 @@ module "api_servers" {
 
   code_bucket   = module.storage.bucket_name # Де лежить код
   code_archive  = google_storage_bucket_object.backend_code.name # Ім'я архіву
-  
+
   github_token       = var.github_token
+
+  depends_on = [ module.database, module.storage ]
 }
 
 module "load_balancer" {

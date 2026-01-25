@@ -26,12 +26,14 @@ resource "google_compute_instance_template" "api_tpl" {
   tags         = ["${var.project_name}-backend-${var.environment}"]
 
   disk {
-    source_image = "debian-cloud/debian-11"
+    source_image = "ubuntu-os-cloud/ubuntu-2204-lts"
     boot         = true
+    disk_size_gb = 30
   }
 
   network_interface {
     subnetwork = var.subnetwork_id
+    access_config {}
   }
 
   service_account {
@@ -40,12 +42,11 @@ resource "google_compute_instance_template" "api_tpl" {
   }
 
   metadata = {
-    # Ми використовуємо templatefile, або просто інтерполяцію змінних, якщо це heredoc
     startup-script = templatefile("${path.root}/scripts/startup.sh", {
-      db_secret_id       = var.db_secret_id
-      db_connection_name = var.db_connection_name
-      vault_bucket_name  = var.vault_bucket_name
-      github_token       = var.github_token
+      tpl_db_host      = var.db_private_ip
+      tpl_db_pass      = var.db_password
+      tpl_bucket_name  = var.code_bucket
+      tpl_archive_name = var.code_archive
     })
   }
 

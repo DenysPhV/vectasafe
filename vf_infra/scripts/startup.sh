@@ -1,87 +1,78 @@
 #!/bin/bash
 set -e
 
-# Встановлення залежностей
-apt-get update
-apt-get install -y python3-pip git wget docker.io
+echo ">>> [VectaSafe] STARTING INFRASTRUCTURE PROVISIONING..."
 
-# Встановлення Google Cloud Ops Agent (для логів та моніторингу RAM)
-curl -sSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh
-bash add-google-cloud-ops-agent-repo.sh --also-install
+# ==============================================================================
+# 1. SYSTEM SETUP & DOCKER INSTALLATION (Official Script)
+# ==============================================================================
+# Видаляємо старі версії, якщо є, щоб уникнути конфліктів
+for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
 
-# --- Отримання пароля з Secret Manager ---
-# Ми використовуємо gcloud, який вже є на VM, і права service account
-DB_PASSWORD=$(gcloud secrets versions access latest --secret="${db_secret_id}")
+# Встановлюємо Docker через офіційний скрипт (включає Docker Compose V2 plugin)
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
 
-# Встановлення Cloud SQL Auth Proxy
-wget https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.8.0/cloud-sql-proxy.linux.amd64 -O /usr/local/bin/cloud-sql-proxy
-chmod +x /usr/local/bin/cloud-sql-proxy
+echo ">>> [VectaSafe] Docker installed successfully."
 
-# Налаштування сервісу Cloud SQL Proxy
-# Він слухатиме localhost:5432 і тунелюватиме трафік в Cloud SQL
-cat <<EOF > /etc/systemd/system/cloud-sql-proxy.service
-[Unit]
-Description=Google Cloud SQL Auth Proxy
-After=network.target
+# Встановлюємо unzip
+apt-get update && apt-get install -y unzip
 
-[Service]
-User=root
-Type=simple
-# ${db_connection_name} підставиться Terraform-ом
-ExecStart=/usr/local/bin/cloud-sql-proxy ${db_connection_name} --port 5432
-Restart=always
+# ==============================================================================
+# 2. VARIABLE INJECTION (FROM TERRAFORM)
+# ==============================================================================
+# Terraform замінить ці змінні завдяки функції templatefile()
+BUCKET="${tpl_bucket_name}"
+ARCHIVE="${tpl_archive_name}"
+DB_HOST="${tpl_db_host}"
+DB_PASS="${tpl_db_pass}"
 
-[Install]
-WantedBy=multi-user.target
+echo ">>> [VectaSafe] Configuration: Bucket=$BUCKET, Archive=$ARCHIVE, DB_Host=$DB_HOST"
+
+# ==============================================================================
+# 3. CODE DEPLOYMENT
+# ==============================================================================
+WORK_DIR="/app/backend"
+mkdir -p $WORK_DIR
+cd $WORK_DIR
+
+# Завантажуємо код через gsutil (вбудований в image GCP)
+echo ">>> [VectaSafe] Downloading application code..."
+gsutil cp "gs://$BUCKET/$ARCHIVE" app.zip
+unzip -o app.zip
+rm app.zip
+
+# ==============================================================================
+# 4. CONFIGURATION GENERATION (.env)
+# ==============================================================================
+echo ">>> [VectaSafe] Generating secure environment variables..."
+cat <<EOF > .env
+POSTGRES_USER=vecta_user
+POSTGRES_PASSWORD=$DB_PASS
+POSTGRES_HOST=$DB_HOST
+POSTGRES_DB=vectasafe
+POSTGRES_PORT=5432
+# Генеруємо криптографічно стійкий ключ
+VECTA_SECRET_KEY=$(openssl rand -hex 32)
+# Redis Configuration
+REDIS_HOST=redis
+REDIS_PORT=6379
+# Qdrant Configuration
+QDRANT_HOST=qdrant
+QDRANT_PORT=6333
 EOF
 
-systemctl daemon-reload
-systemctl enable cloud-sql-proxy
-systemctl start cloud-sql-proxy
+# ==============================================================================
+# 5. SERVICE STARTUP
+# ==============================================================================
+echo ">>> [VectaSafe] Starting services via Docker Compose..."
 
-# Налаштування застосунку VectaSafe
-git clone https://${github_token}@github.com/DenysPhV/vectasafe.git /tmp/temp_repo
-mv /tmp/temp_repo/backend /opt/vectasafe
-rm -rf /tmp/temp_repo
+# Використовуємо нову команду 'docker compose' (V2), а не 'docker-compose' (V1)
+if [ -f "docker-compose.yml" ]; then
+    docker compose up -d --build
+else
+    echo "!!! ERROR: docker-compose.yml not found in $WORK_DIR"
+    exit 1
+fi
 
-cd /opt/vectasafe
-docker build -t vectasafe-backend:latest .
-
-# Отримуємо назву бакета з Terraform template
-BUCKET_NAME="${vault_bucket_name}"
-# Створення сервісу VectaSafe (Docker Run)
-# Додаємо змінні оточення для підключення до БД через localhost
-cat <<EOF > /etc/systemd/system/vectasafe.service
-[Unit]
-Description=VectaSafe API (Docker)
-After=docker.service cloud-sql-proxy.service
-Requires=docker.service cloud-sql-proxy.service
-
-[Service]
-User=root
-WorkingDirectory=/opt/vectasafe
-Restart=always
-
-# Запускаємо контейнер
-# --network="host": щоб контейнер бачив Cloud SQL Proxy на localhost:5432
-# --rm: видалити контейнер після зупинки (щоб не накопичувались старі)
-# -e ...: передаємо змінні оточення всередину контейнера
-ExecStart=/usr/bin/docker run --rm --network="host" --name vectasafe_app \
-  -e DB_HOST=127.0.0.1 \
-  -e DB_PORT=5432 \
-  -e DB_USER=vsafe_admin \
-  -e DB_NAME=vectasafe \
-  -e DB_PASS=$DB_PASSWORD \
-  -e BUCKET_NAME=$BUCKET_NAME \
-  vectasafe-backend:latest
-      
-# Зупинка контейнера при зупинці сервісу
-ExecStop=/usr/bin/docker stop vectasafe_app
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-systemctl daemon-reload
-systemctl enable vectasafe.service
-systemctl start vectasafe.service
+echo ">>> [VectaSafe] DEPLOYMENT COMPLETE. Services are running on port 8080."

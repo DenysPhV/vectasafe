@@ -16,7 +16,7 @@
 - Знайди ім'я інстансу
 `gcloud compute instances list`
 - Підключись
-`gcloud compute ssh [ІМ'Я_ІНСТАНСУ] --zone=us-central1-a --tunnel-through-iap`
+`gcloud compute ssh [ІМ'Я_ІНСТАНСУ] --zone=[зона інстансу] --tunnel-through-iap`
 
 - Чи живий Docker-контейнер?
 `sudo docker ps`
