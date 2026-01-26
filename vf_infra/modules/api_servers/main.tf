@@ -43,10 +43,10 @@ resource "google_compute_instance_template" "api_tpl" {
 
   metadata = {
     startup-script = templatefile("${path.root}/scripts/startup.sh", {
-      tpl_db_host      = var.db_private_ip
-      tpl_db_pass      = var.db_password
-      tpl_bucket_name  = var.code_bucket
-      tpl_archive_name = var.code_archive
+      tpl_db_host     = var.db_private_ip
+      tpl_db_pass     = var.db_password
+      tpl_repo_url    = var.github_repo_url # <--- НОВЕ
+      tpl_branch_name = "DEV"               # Change to MAIN branch when will be prod
     })
   }
 

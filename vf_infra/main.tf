@@ -43,17 +43,17 @@ module "api_servers" {
   min_replicas = var.min_replicas
   max_replicas = var.max_replicas
 
-  db_private_ip = module.database.private_ip
-  db_password   = var.db_password
+  db_private_ip      = module.database.private_ip
+  db_password        = var.db_password
   db_connection_name = module.database.connection_name
   db_secret_id       = module.database.db_secret_id
 
-  code_bucket   = module.storage.bucket_name # Де лежить код
-  code_archive  = google_storage_bucket_object.backend_code.name # Ім'я архіву
+  # Новий спосіб доставки коду
+  github_repo_url = var.github_repo_url
 
-  github_token       = var.github_token
+  github_token = var.github_token
 
-  depends_on = [ module.database, module.storage ]
+  depends_on = [module.database, module.storage]
 }
 
 module "load_balancer" {

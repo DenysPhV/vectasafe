@@ -117,3 +117,8 @@ variable "github_token" {
   type        = string
   sensitive   = true
 }
+
+variable "github_repo_url" {
+  description = "Public URL of the GitHub repository (HTTPS)"
+  type        = string
+}

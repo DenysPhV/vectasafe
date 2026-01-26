@@ -1,78 +1,62 @@
 #!/bin/bash
 set -e
 
-echo ">>> [VectaSafe] STARTING INFRASTRUCTURE PROVISIONING..."
+echo ">>> [VectaSafe] STARTING GIT DEPLOYMENT..."
 
-# ==============================================================================
-# 1. SYSTEM SETUP & DOCKER INSTALLATION (Official Script)
-# ==============================================================================
-# Видаляємо старі версії, якщо є, щоб уникнути конфліктів
-for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+# 1. INSTALL DOCKER & GIT
+# Чистка старих версій
+for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done
 
-# Встановлюємо Docker через офіційний скрипт (включає Docker Compose V2 plugin)
+# Встановлення Docker
 curl -fsSL https://get.docker.com -o get-docker.sh
 sh get-docker.sh
 
-echo ">>> [VectaSafe] Docker installed successfully."
+# Встановлення Git
+apt-get update && apt-get install -y git
 
-# Встановлюємо unzip
-apt-get update && apt-get install -y unzip
+echo ">>> [VectaSafe] Environment ready."
 
-# ==============================================================================
-# 2. VARIABLE INJECTION (FROM TERRAFORM)
-# ==============================================================================
-# Terraform замінить ці змінні завдяки функції templatefile()
-BUCKET="${tpl_bucket_name}"
-ARCHIVE="${tpl_archive_name}"
+# 2. LOAD VARIABLES
+REPO_URL="${tpl_repo_url}"
+BRANCH="${tpl_branch_name}"
 DB_HOST="${tpl_db_host}"
 DB_PASS="${tpl_db_pass}"
 
-echo ">>> [VectaSafe] Configuration: Bucket=$BUCKET, Archive=$ARCHIVE, DB_Host=$DB_HOST"
+echo ">>> [VectaSafe] Cloning from $REPO_URL (branch: $BRANCH)..."
 
-# ==============================================================================
-# 3. CODE DEPLOYMENT
-# ==============================================================================
-WORK_DIR="/app/backend"
-mkdir -p $WORK_DIR
-cd $WORK_DIR
+# 3. CLONE REPOSITORY
+# Видаляємо папку, якщо вона є (для чистоти експерименту при перезапусках)
+rm -rf /app/vectasafe
 
-# Завантажуємо код через gsutil (вбудований в image GCP)
-echo ">>> [VectaSafe] Downloading application code..."
-gsutil cp "gs://$BUCKET/$ARCHIVE" app.zip
-unzip -o app.zip
-rm app.zip
+# Клонуємо весь репозиторій
+mkdir -p /app
+cd /app
+git clone -b $BRANCH $REPO_URL vectasafe
 
-# ==============================================================================
-# 4. CONFIGURATION GENERATION (.env)
-# ==============================================================================
-echo ">>> [VectaSafe] Generating secure environment variables..."
+# Переходимо в папку backend (важливо! у вашому репо вона всередині)
+cd /app/vectasafe/backend
+
+# 4. GENERATE CONFIGURATION (.env)
+echo ">>> [VectaSafe] Generating .env..."
 cat <<EOF > .env
 POSTGRES_USER=vecta_user
 POSTGRES_PASSWORD=$DB_PASS
 POSTGRES_HOST=$DB_HOST
 POSTGRES_DB=vectasafe
 POSTGRES_PORT=5432
-# Генеруємо криптографічно стійкий ключ
 VECTA_SECRET_KEY=$(openssl rand -hex 32)
-# Redis Configuration
+# Redis & Qdrant (hostnames from docker-compose services)
 REDIS_HOST=redis
 REDIS_PORT=6379
-# Qdrant Configuration
 QDRANT_HOST=qdrant
 QDRANT_PORT=6333
 EOF
 
-# ==============================================================================
-# 5. SERVICE STARTUP
-# ==============================================================================
-echo ">>> [VectaSafe] Starting services via Docker Compose..."
+# 5. START DOCKER
+echo ">>> [VectaSafe] Starting services..."
 
-# Використовуємо нову команду 'docker compose' (V2), а не 'docker-compose' (V1)
-if [ -f "docker-compose.yml" ]; then
-    docker compose up -d --build
-else
-    echo "!!! ERROR: docker-compose.yml not found in $WORK_DIR"
-    exit 1
-fi
+# Використовуємо нову команду 'docker compose' (V2)
+docker compose down --remove-orphans || true # На всяк випадок
+docker compose up -d --build
 
-echo ">>> [VectaSafe] DEPLOYMENT COMPLETE. Services are running on port 8080."
+echo ">>> [VectaSafe] DEPLOYMENT COMPLETE via GIT!"

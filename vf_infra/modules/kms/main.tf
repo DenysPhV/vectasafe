@@ -17,13 +17,13 @@ resource "random_id" "kms_suffix" {
 resource "google_kms_key_ring" "key_ring" {
   name       = "${var.project_name}-${var.key_ring_name}-${var.environment}-${random_id.kms_suffix.hex}"
   location   = var.region
-  project  = var.project_id
+  project    = var.project_id
   depends_on = [google_project_service.kms_api]
 }
 
 resource "google_kms_crypto_key" "storage_key" {
-  name     = "${var.key_name}-${var.environment}-${random_id.kms_suffix.hex}"
-  key_ring = google_kms_key_ring.key_ring.id
+  name            = "${var.key_name}-${var.environment}-${random_id.kms_suffix.hex}"
+  key_ring        = google_kms_key_ring.key_ring.id
   rotation_period = "7776000s" # 90 days
 
   lifecycle {
