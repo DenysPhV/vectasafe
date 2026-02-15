@@ -5,28 +5,30 @@ from pydantic import Field
 class Settings(BaseSettings):
     # App
     APP_NAME: str = "Vecta Safe MVP"
-    SECRET_KEY: str = Field(..., alias="VECTA_SECRET_KEY")
+    VECTA_SECRET_KEY: str = Field(..., alias="VECTA_SECRET_KEY")
 
     # Database (PostgreSQL)
     DB_USER: str = Field(..., alias="POSTGRES_USER")
     DB_PASSWORD: str = Field(..., alias="POSTGRES_PASSWORD")
     DB_HOST: str = Field("db", alias="POSTGRES_HOST")
+    DB_PORT: int = Field(5432, alias="POSTGRES_PORT")
     DB_NAME: str = Field("vectasafe", alias="POSTGRES_DB")
 
     @property
     def DB_URL(self) -> str:
-        return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:5432/{self.DB_NAME}"
+        return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
     class Config:
-        env_file = ".env" 
+        env_file = ".env"
+        extra = "ignore" 
 
     # Queue (Redis)
-    REDIS_HOST: str = "redis"
-    REDIS_PORT: int = 6379
+    REDIS_HOST: str = Field("redis", alias="REDIS_HOST")
+    REDIS_PORT: int = Field(6379, alias="REDIS_PORT")
 
     # Vector DB (Qdrant)
-    QDRANT_HOST: str = "qdrant"
-    QDRANT_PORT: int = 6333
+    QDRANT_HOST: str = Field("qdrant", alias="QDRANT_HOST")
+    QDRANT_PORT: int = Field(6333, alias="QDRANT_PORT")
     QDRANT_COLLECTION: str = "documents"
 
     # Storage (S3 / MinIO)
@@ -35,8 +37,5 @@ class Settings(BaseSettings):
     S3_SECRET_KEY: str = "minioadmin"
     S3_BUCKET_NAME: str = "vecta-encrypted-bucket"
     S3_REGION: str = "us-east-1"
-
-    class Config:
-        env_file = ".env"
 
 settings = Settings()

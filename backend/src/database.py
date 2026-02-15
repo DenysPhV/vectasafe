@@ -3,6 +3,11 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy.orm import declarative_base
 from config import settings
 
+connect_args = {}
+if "ssl" in str(settings.DB_URL):
+    # Для asyncpg іноді треба явно дозволяти SSL, якщо він є в URL
+    pass
+
 # Створення асинхронного двигуна
 engine = create_async_engine(
     settings.DB_URL,
